@@ -59,7 +59,7 @@ router.post("/", async (req: Request, res: Response) => {
       message: "Chit deactivated successfully",
     }
 
-    res.status(200).json(response)
+    return res.status(200).json(response)
   } catch (error: any) {
     console.error("Error deactivating chit:", error)
 
@@ -68,7 +68,7 @@ router.post("/", async (req: Request, res: Response) => {
       error: error.message || "Failed to deactivate chit",
     }
 
-    res.status(500).json(response)
+    return res.status(500).json(response)
   }
 })
 

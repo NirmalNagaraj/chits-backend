@@ -84,14 +84,14 @@ router.post("/", async (req, res) => {
       balance: loan.balance,
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: response,
       message: "Loan application created successfully",
     } as ApiResponse<LoanApplicationResponse>)
   } catch (error) {
     console.error("Error creating loan application:", error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
     } as ApiResponse)

@@ -71,14 +71,14 @@ router.post("/", async (req, res) => {
 
     const result = await processLoanPayment({ user_id, loan_id, amount, payment_mode })
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: result,
       message: result.is_active ? "Loan payment processed successfully" : "Loan fully paid and closed",
     } as ApiResponse<LoanPaymentResponse>)
   } catch (error) {
     console.error("Loan payment error:", error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
     } as ApiResponse)

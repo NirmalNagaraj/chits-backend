@@ -6,7 +6,7 @@ const router = Router()
 
 /**
  * @swagger
- * /loans/deactive:
+ * /loan/deactive:
  *   post:
  *     summary: Force close/deactivate a loan
  *     tags: [Loans]
@@ -59,7 +59,7 @@ router.post("/", async (req: Request, res: Response) => {
       message: "Loan deactivated successfully",
     }
 
-    res.status(200).json(response)
+    return res.status(200).json(response)
   } catch (error: any) {
     console.error("Error deactivating loan:", error)
 
@@ -68,7 +68,7 @@ router.post("/", async (req: Request, res: Response) => {
       error: error.message || "Failed to deactivate loan",
     }
 
-    res.status(500).json(response)
+    return res.status(500).json(response)
   }
 })
 

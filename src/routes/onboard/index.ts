@@ -117,11 +117,11 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     // Validate mobile is a valid number
-    if (!Number.isInteger(mobile)  ||  mobile.toString().length !==10) {
+    if (!Number.isInteger(mobile) || mobile <= 0) {
       const response: ApiResponse = {
         success: false,
         error: "Validation failed",
-        message: "Mobile must be a valid positive number and it should have 10 digits accurate",
+        message: "Mobile must be a valid positive number",
       }
       return res.status(400).json(response)
     }
@@ -165,7 +165,7 @@ router.post("/", async (req: Request, res: Response) => {
       message: "User and chit onboarded successfully",
     }
 
-    res.status(201).json(response)
+    return res.status(201).json(response)
   } catch (error) {
     console.error("Error in onboard route:", error)
 
@@ -175,7 +175,7 @@ router.post("/", async (req: Request, res: Response) => {
       message: "Failed to create user and chit",
     }
 
-    res.status(500).json(response)
+    return res.status(500).json(response)
   }
 })
 

@@ -47,7 +47,7 @@ router.get("/", async (req: Request, res: Response) => {
       message: "Users details retrieved successfully",
     }
 
-    res.status(200).json(response)
+    return res.status(200).json(response)
   } catch (error) {
     console.error("Error in users details route:", error)
 
@@ -57,7 +57,7 @@ router.get("/", async (req: Request, res: Response) => {
       message: "Failed to fetch users details",
     }
 
-    res.status(500).json(response)
+    return res.status(500).json(response)
   }
 })
 
@@ -162,7 +162,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       message: "User detailed information retrieved successfully",
     }
 
-    res.status(200).json(response)
+    return res.status(200).json(response)
   } catch (error) {
     console.error("Error in user detailed info route:", error)
 
@@ -172,7 +172,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       message: "Failed to fetch user detailed information",
     }
 
-    res.status(500).json(response)
+    return res.status(500).json(response)
   }
 })
 
