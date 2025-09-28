@@ -58,7 +58,7 @@ if (config.nodeEnv === 'production') {
   app.set('trust proxy', 1)
 }
 
-// Fix Swagger UI with CDN assets to avoid MIME type issues
+// Swagger UI options
 const swaggerOptions = {
   explorer: true,
   customSiteTitle: "Chit Fund API Documentation",
@@ -66,22 +66,24 @@ const swaggerOptions = {
   swaggerOptions: {
     persistAuthorization: true,
   },
-  // Use CDN assets to prevent MIME type issues on Vercel
+  // ✅ Force Swagger to load UI assets from CDN (avoids MIME/404 issues on Vercel)
   customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui.css",
   customJs: [
     "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui-bundle.js",
-    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui-standalone-preset.js"
-  ]
-}
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui-standalone-preset.js",
+  ],
+};
 
-app.use('/api-docs', swaggerUi.serve)
-app.get('/api-docs', swaggerUi.setup(swaggerSpec, swaggerOptions))
+// ✅ Serve API docs using setup directly (no swaggerUi.serve middleware here)
+app.use("/api-docs", (req, res, next) => {
+  swaggerUi.setup(swaggerSpec, swaggerOptions)(req, res, next);
+});
 
-// Serve raw swagger spec
-app.get('/api-docs/swagger.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json')
-  res.send(swaggerSpec)
-})
+// ✅ Raw Swagger JSON
+app.get("/api-docs/swagger.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 // Root endpoint
 app.get('/', (req, res) => {
