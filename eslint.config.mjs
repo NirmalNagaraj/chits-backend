@@ -9,8 +9,25 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
+// Your existing Next.js + TS config
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+
+  {
+    rules: {
+      // ✅ Ensures all code paths return a value
+      "consistent-return": "error",
+
+      // ⚠️ Optional: helps catch missing return types early
+      "@typescript-eslint/explicit-function-return-type": [
+        "warn",
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;
