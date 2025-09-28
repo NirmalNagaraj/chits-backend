@@ -16,7 +16,7 @@ const options: swaggerJsdoc.Options = {
       {
         url:
           process.env.NODE_ENV === "production"
-            ? `${process.env.URL}`
+            ? "https://your-production-url.com"
             : `http://localhost:${process.env.PORT || 3001}`,
         description: process.env.NODE_ENV === "production" ? "Production server" : "Development server",
       },
@@ -44,6 +44,61 @@ const options: swaggerJsdoc.Options = {
             },
           },
           required: ["success", "message"],
+        },
+        UnpaidChitEntry: {
+          type: "object",
+          properties: {
+            user_id: {
+              type: "string",
+              format: "uuid",
+              description: "Unique user identifier",
+              example: "123e4567-e89b-12d3-a456-426614174000",
+            },
+            name: {
+              type: "string",
+              description: "Full name of the user",
+              example: "John Doe",
+            },
+            mobile: {
+              type: "number",
+              description: "Mobile number of the user",
+              example: 9876543210,
+            },
+            total_amount_to_be_paid: {
+              type: "number",
+              description: "Total amount pending to be paid by this user (sum of all unpaid chit balances)",
+              example: 15000,
+            },
+            unpaid_chits_count: {
+              type: "integer",
+              description: "Number of unpaid chits for this user",
+              example: 3,
+            },
+          },
+          required: ["user_id", "name", "mobile", "total_amount_to_be_paid", "unpaid_chits_count"],
+        },
+        UnpaidChitsResponse: {
+          type: "object",
+          properties: {
+            unpaid_chits: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/UnpaidChitEntry",
+              },
+              description: "List of users with unpaid chits, sorted by amount (highest first)",
+            },
+            total_users_with_unpaid_chits: {
+              type: "integer",
+              description: "Total number of users who have unpaid chits",
+              example: 12,
+            },
+            total_unpaid_amount: {
+              type: "number",
+              description: "Total amount pending across all users",
+              example: 75000,
+            },
+          },
+          required: ["unpaid_chits", "total_users_with_unpaid_chits", "total_unpaid_amount"],
         },
         DeactivateChitRequest: {
           type: "object",
@@ -304,6 +359,29 @@ const options: swaggerJsdoc.Options = {
             },
           },
           required: ["user_id", "name", "mobile", "total_chits", "chit_payment_history", "loan_details"],
+        },
+        UserSearchResponse: {
+          type: "object",
+          properties: {
+            users: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/UserDetailsResponse",
+              },
+              description: "List of users matching the search query",
+            },
+            total_results: {
+              type: "integer",
+              description: "Total number of users found",
+              example: 5,
+            },
+            search_query: {
+              type: "string",
+              description: "The search query that was used",
+              example: "John",
+            },
+          },
+          required: ["users", "total_results", "search_query"],
         },
         Chit: {
           type: "object",
@@ -936,6 +1014,10 @@ const options: swaggerJsdoc.Options = {
       {
         name: "User Management",
         description: "User onboarding and management endpoints",
+      },
+      {
+        name: "Users",
+        description: "User search and management endpoints",
       },
       {
         name: "Chit Management",

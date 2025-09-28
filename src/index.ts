@@ -15,6 +15,8 @@ import userDetailsRoutes from "./routes/users/details"
 import analyticsRoutes from "./routes/analytics"
 import chitDeactiveRoutes from "./routes/chits/deactive"
 import loanDeactiveRoutes from "./routes/loan/deactive"
+import chitUnpaidRoutes from "./routes/chits/unpaid"
+import userSearchRoutes from "./routes/users/search"
 import { swaggerSpec } from "../swagger"
 
 const app = express()
@@ -49,8 +51,10 @@ app.use("/pay/chit-funds", chitPaymentRoutes)
 app.use("/loan/apply", loanApplyRoutes)
 app.use("/loan/pay", loanPayRoutes)
 app.use("/users/details", userDetailsRoutes)
+app.use("/users/search", userSearchRoutes)
 app.use("/analytics", analyticsRoutes)
 app.use("/chits/deactive", chitDeactiveRoutes)
+app.use("/chits/unpaid", chitUnpaidRoutes)
 app.use("/loan/deactive", loanDeactiveRoutes)
 
 // Error handling middleware

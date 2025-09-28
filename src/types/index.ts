@@ -222,3 +222,27 @@ export interface DeactivateLoanResponse {
   deactivated_at: string
   reason?: string
 }
+
+export interface UnpaidChitEntry {
+  user_id: string
+  name: string
+  mobile: number
+  total_amount_to_be_paid: number
+  unpaid_chits_count: number
+}
+
+export interface UnpaidChitsResponse {
+  unpaid_chits: UnpaidChitEntry[]
+  total_users_with_unpaid_chits: number
+  total_unpaid_amount: number
+}
+
+export interface UserSearchRequest {
+  query: string
+}
+
+export interface UserSearchResponse {
+  users: UserDetailsResponse[]
+  total_results: number
+  search_query: string
+}
