@@ -19,156 +19,50 @@ import { swaggerSpec } from "../swagger"
 
 const app = express()
 
-// Enhanced security middleware with CSP for Swagger UI
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-    },
-  },
-}))
+// Security middleware
+app.use(helmet())
+app.use(cors())
 
-// Enhanced CORS configuration
-app.use(cors({
-  origin: config.nodeEnv === 'production' 
-    ? process.env.ALLOWED_ORIGINS?.split(',') || []
-    : true,
-  credentials: true,
-}))
+// Logging middleware
+app.use(morgan("combined"))
 
-// Environment-aware logging
-app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'))
+// Body parsing middleware
+app.use(express.json({ limit: "10mb" }))
+app.use(express.urlencoded({ extended: true }))
 
-// Enhanced body parsing middleware
-app.use(express.json({ 
-  limit: "10mb",
-  type: ['application/json', 'text/plain']
-}))
-app.use(express.urlencoded({ 
-  extended: true,
-  limit: "10mb"
-}))
+// Swagger documentation
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Chit Fund API Documentation",
+  }),
+)
 
-// Trust proxy for production deployments
-if (config.nodeEnv === 'production') {
-  app.set('trust proxy', 1)
-}
+// Routes
+app.use("/health", healthRoutes)
+app.use("/onboard", onboardRoutes)
+app.use("/update/weekly-chits", weeklyChitsRoutes)
+app.use("/pay/chit-funds", chitPaymentRoutes)
+app.use("/loan/apply", loanApplyRoutes)
+app.use("/loan/pay", loanPayRoutes)
+app.use("/users/details", userDetailsRoutes)
+app.use("/analytics", analyticsRoutes)
+app.use("/chits/deactive", chitDeactiveRoutes)
+app.use("/loan/deactive", loanDeactiveRoutes)
 
-// Swagger UI options
-const swaggerOptions = {
-  explorer: true,
-  customSiteTitle: "Chit Fund API Documentation",
-  customfavIcon: "/favicon.ico",
-  swaggerOptions: {
-    persistAuthorization: true,
-  },
-  // ✅ Force Swagger to load UI assets from CDN (avoids MIME/404 issues on Vercel)
-  customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui.css",
-  customJs: [
-    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui-bundle.js",
-    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.19.1/swagger-ui-standalone-preset.js",
-  ],
-};
-
-// ✅ Serve API docs using setup directly (no swaggerUi.serve middleware here)
-app.use("/api-docs", (req, res, next) => {
-  swaggerUi.setup(swaggerSpec, swaggerOptions)(req, res, next);
-});
-
-// ✅ Raw Swagger JSON
-app.get("/api-docs/swagger.json", (req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(swaggerSpec);
-});
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Chit Fund API Server',
-    version: '1.0.0',
-    documentation: '/api-docs',
-    health: '/health',
-    timestamp: new Date().toISOString(),
-    environment: config.nodeEnv
-  })
-})
-
-// API Routes - organized and documented
-const routes = [
-  { path: "/health", router: healthRoutes, description: "Health check endpoints" },
-  { path: "/onboard", router: onboardRoutes, description: "User onboarding endpoints" },
-  { path: "/update/weekly-chits", router: weeklyChitsRoutes, description: "Weekly chit updates" },
-  { path: "/pay/chit-funds", router: chitPaymentRoutes, description: "Chit fund payments" },
-  { path: "/loan/apply", router: loanApplyRoutes, description: "Loan applications" },
-  { path: "/loan/pay", router: loanPayRoutes, description: "Loan payments" },
-  { path: "/users/details", router: userDetailsRoutes, description: "User details" },
-  { path: "/analytics", router: analyticsRoutes, description: "Analytics data" },
-  { path: "/chits/deactive", router: chitDeactiveRoutes, description: "Chit deactivation" },
-  { path: "/loan/deactive", router: loanDeactiveRoutes, description: "Loan deactivation" }
-]
-
-// Register all routes
-routes.forEach(({ path, router, description }) => {
-  app.use(path, router)
-  console.log(`📍 Route registered: ${path} - ${description}`)
-})
-
-// Routes summary endpoint for debugging
-app.get('/routes', (req, res) => {
-  const routeSummary = routes.map(({ path, description }) => ({
-    path,
-    description,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
-  }))
-
-  res.json({
-    message: 'Available API routes',
-    totalRoutes: routes.length,
-    routes: routeSummary,
-    documentation: '/api-docs'
-  })
-})
-
-// Error handling middleware (must be last)
+// Error handling middleware
 app.use(notFoundHandler)
 app.use(errorHandler)
 
-// Enhanced server startup with better logging
-const startServer = () => {
-  const baseUrl = config.nodeEnv === 'production' 
-    ? `https://${process.env.VERCEL_URL || 'your-domain.vercel.app'}`
-    : `http://localhost:${config.port}`
-
-  app.listen(config.port, () => {
-    console.log('🚀 Chit Fund Backend Server Started')
-    console.log('=' .repeat(50))
-    console.log(`📊 Environment: ${config.nodeEnv}`)
-    console.log(`🌐 Server: ${baseUrl}`)
-    console.log(`💚 Health: ${baseUrl}/health`)
-    console.log(`📚 API Docs: ${baseUrl}/api-docs`)
-    console.log(`🔗 Routes: ${baseUrl}/routes`)
-    console.log('=' .repeat(50))
-  })
-}
-
-// Graceful shutdown handlers
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully')
-  process.exit(0)
+// Start server
+app.listen(config.port, () => {
+  console.log(`🚀 Chit Fund Backend Server running on port ${config.port}`)
+  console.log(`📊 Environment: ${config.nodeEnv}`)
+  console.log(`🔗 Health check: http://localhost:${config.port}/health`)
+  console.log(`📚 API Documentation: http://localhost:${config.port}/api-docs`)
 })
-
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully')
-  process.exit(0)
-})
-
-// Start server only if not in test environment
-if (config.nodeEnv !== 'test') {
-  startServer()
-}
 
 export default app
